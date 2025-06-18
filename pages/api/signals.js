@@ -1,3 +1,4 @@
+// pages/api/signals.js
 export default function handler(req, res) {
   const signals = [
     {

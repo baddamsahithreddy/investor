@@ -1,59 +1,44 @@
 // utils/rsiAnalysis.js
+// Calculates RSI using closing prices and returns RSI value with signal
 
-import axios from 'axios';
-
-/**
- * Calculates RSI from historical price data
- * Formula source: https://www.investopedia.com/terms/r/rsi.asp
- */
-export async function getRSI(stockSymbol) {
-  try {
-    const url = `https://priceapi.moneycontrol.com/techCharts/indianMarket/stock/history?symbol=${stockSymbol}&resolution=1D&from=${getFromDate()}&to=${getToDate()}`;
-
-    const response = await axios.get(url);
-    const prices = response.data.c; // closing prices
-
-    if (!prices || prices.length < 15) {
-      throw new Error("Insufficient price data for RSI");
-    }
-
-    const rsi = calculateRSI(prices);
-
-    let zone = 'Neutral';
-    if (rsi > 70) zone = 'Overbought';
-    else if (rsi < 30) zone = 'Oversold';
-
-    return { rsi: Math.round(rsi), zone };
-  } catch (error) {
-    console.error(`RSI fetch failed for ${stockSymbol}:`, error);
-    return { rsi: null, zone: 'Unknown' };
+export function calculateRSI(closePrices, period = 14) {
+  if (closePrices.length < period + 1) {
+    return { rsi: null, signal: "Not enough data" };
   }
-}
 
-function calculateRSI(closingPrices, period = 14) {
-  let gains = 0;
-  let losses = 0;
+  let gains = 0, losses = 0;
 
   for (let i = 1; i <= period; i++) {
-    const change = closingPrices[i] - closingPrices[i - 1];
-    if (change > 0) gains += change;
-    else losses -= change; // change is negative
+    const diff = closePrices[i] - closePrices[i - 1];
+    if (diff >= 0) gains += diff;
+    else losses -= diff;
   }
 
-  const avgGain = gains / period;
-  const avgLoss = losses / period;
+  let avgGain = gains / period;
+  let avgLoss = losses / period;
 
-  const rs = avgGain / (avgLoss || 1);
+  for (let i = period + 1; i < closePrices.length; i++) {
+    const diff = closePrices[i] - closePrices[i - 1];
+    if (diff >= 0) {
+      avgGain = (avgGain * (period - 1) + diff) / period;
+      avgLoss = (avgLoss * (period - 1)) / period;
+    } else {
+      avgGain = (avgGain * (period - 1)) / period;
+      avgLoss = (avgLoss * (period - 1) - diff) / period;
+    }
+  }
+
+  if (avgLoss === 0) return { rsi: 100, signal: "Overbought" };
+
+  const rs = avgGain / avgLoss;
   const rsi = 100 - 100 / (1 + rs);
-  return rsi;
-}
 
-function getFromDate() {
-  const date = new Date();
-  date.setDate(date.getDate() - 30);
-  return Math.floor(date.getTime() / 1000);
-}
+  let signal = "Neutral";
+  if (rsi > 70) signal = "Overbought";
+  else if (rsi < 30) signal = "Oversold";
 
-function getToDate() {
-  return Math.floor(Date.now() / 1000);
+  return {
+    rsi: parseFloat(rsi.toFixed(2)),
+    signal
+  };
 }

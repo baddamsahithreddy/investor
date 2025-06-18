@@ -1,6 +1,15 @@
-# LogicalInvestor Deployment Guide
+# LogicalInvestor Dashboard
 
-    1. Upload this folder to a GitHub repository.
-    2. Go to https://vercel.com and import the repo.
-    3. Choose `main` branch and deploy.
-    4. Your live app will be available in 2-3 minutes.
+This is a clean starter for a Next.js app using only JavaScript. To run:
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Start the server:
+   ```bash
+   npm run dev
+   ```
+
+Visit http://localhost:3000 to see it.

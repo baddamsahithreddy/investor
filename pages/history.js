@@ -1,20 +1,20 @@
 // pages/history.js
 import React, { useEffect, useState } from "react";
 
-export default function History() {
+export default function TradeHistory() {
   const [history, setHistory] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchHistory() {
       try {
-        const response = await fetch("/data/history.json");
-        const data = await response.json();
+        const res = await fetch("/data/history.json");
+        const data = await res.json();
         setHistory(data);
-        setLoading(false);
+        setIsLoading(false);
       } catch (err) {
-        console.error("Failed to fetch trade history", err);
-        setLoading(false);
+        console.error("Failed to load trade history:", err);
+        setIsLoading(false);
       }
     }
     fetchHistory();
@@ -22,15 +22,15 @@ export default function History() {
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial" }}>
-      <h1 style={{ textAlign: "center" }}>📜 Historical Trade Signals</h1>
-      {loading ? (
-        <p>Loading history...</p>
+      <h1 style={{ textAlign: "center" }}>📜 Past Intraday Trade History</h1>
+      {isLoading ? (
+        <p>Loading...</p>
       ) : Object.keys(history).length === 0 ? (
-        <p>No past trades found.</p>
+        <p>No history data available.</p>
       ) : (
-        Object.entries(history).map(([date, trades]) => (
-          <div key={date} style={{ marginBottom: "40px" }}>
-            <h2>{date}</h2>
+        Object.entries(history).map(([date, trades], idx) => (
+          <div key={idx} style={{ marginBottom: "30px" }}>
+            <h3 style={{ borderBottom: "1px solid #ccc", paddingBottom: "5px" }}>{date}</h3>
             <table border="1" cellPadding="10" style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr>
@@ -49,20 +49,20 @@ export default function History() {
                 </tr>
               </thead>
               <tbody>
-                {trades.map((signal, index) => (
+                {trades.map((trade, index) => (
                   <tr key={index}>
-                    <td>{signal.stock}</td>
-                    <td>{signal.direction}</td>
-                    <td>{signal.confidence}%</td>
-                    <td>{signal.timeframe}</td>
-                    <td>{signal.entry}</td>
-                    <td>{signal.exit}</td>
-                    <td>{signal.volume}</td>
-                    <td>{signal.rsi}</td>
-                    <td>{signal.newsSentiment}</td>
-                    <td>{signal.sectorSentiment}</td>
-                    <td>{signal.earningsImpact}</td>
-                    <td>{signal.reason}</td>
+                    <td>{trade.stock}</td>
+                    <td>{trade.direction}</td>
+                    <td>{trade.confidence}%</td>
+                    <td>{trade.timeframe}</td>
+                    <td>{trade.entry}</td>
+                    <td>{trade.exit}</td>
+                    <td>{trade.volume}</td>
+                    <td>{trade.rsi}</td>
+                    <td>{trade.newsSentiment}</td>
+                    <td>{trade.sectorSentiment}</td>
+                    <td>{trade.earningsImpact}</td>
+                    <td>{trade.reason}</td>
                   </tr>
                 ))}
               </tbody>

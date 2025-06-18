@@ -35,9 +35,10 @@ export default function Home() {
                 <th>Timeframe</th>
                 <th>Entry</th>
                 <th>Exit</th>
-                <th>Volume</th>
+                <th>Volume Spike</th>
                 <th>RSI</th>
                 <th>News Sentiment</th>
+                <th>Sector Sentiment</th>
                 <th>Earnings Impact</th>
                 <th>Reason</th>
               </tr>
@@ -54,6 +55,7 @@ export default function Home() {
                   <td>{signal.volume}</td>
                   <td>{signal.rsi}</td>
                   <td>{signal.newsSentiment}</td>
+                  <td>{signal.sectorSentiment}</td>
                   <td>{signal.earningsImpact}</td>
                   <td>{signal.reason}</td>
                 </tr>
@@ -63,5 +65,3 @@ export default function Home() {
         )}
       </div>
     </div>
-  );
-}

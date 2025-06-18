@@ -26,7 +26,11 @@ export default function Home() {
         {signals.length === 0 ? (
           <p>Loading signals...</p>
         ) : (
-          <table border="1" cellPadding="10" style={{ width: "100%", borderCollapse: "collapse" }}>
+          <table
+            border="1"
+            cellPadding="10"
+            style={{ width: "100%", borderCollapse: "collapse" }}
+          >
             <thead>
               <tr>
                 <th>Stock</th>
@@ -64,6 +68,6 @@ export default function Home() {
           </table>
         )}
       </div>
-    </div> 
-  );      
+    </div>
+  );
 }

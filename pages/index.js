@@ -6,9 +6,13 @@ export default function Home() {
 
   useEffect(() => {
     async function fetchData() {
-      const response = await fetch("/api/signals");
-      const data = await response.json();
-      setSignals(data);
+      try {
+        const response = await fetch("/api/signals");
+        const data = await response.json();
+        setSignals(data);
+      } catch (error) {
+        console.error("Failed to fetch signals:", error);
+      }
     }
     fetchData();
   }, []);
@@ -16,13 +20,13 @@ export default function Home() {
   return (
     <div style={{ padding: "20px", fontFamily: "Arial" }}>
       <h1 style={{ textAlign: "center" }}>LogicalInvestor Dashboard</h1>
-      <p style={{ textAlign: "center" }}>Welcome! Deployment is successful.</p>
+      <p style={{ textAlign: "center" }}>AI-powered Intraday Trading Assistant</p>
       <div>
         <h2>Intraday Trade Signals</h2>
         {signals.length === 0 ? (
           <p>Loading signals...</p>
         ) : (
-          <table border="1" cellPadding="10" style={{ width: "100%" }}>
+          <table border="1" cellPadding="10" style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr>
                 <th>Stock</th>
@@ -31,12 +35,11 @@ export default function Home() {
                 <th>Timeframe</th>
                 <th>Entry</th>
                 <th>Exit</th>
-                <th>Reason</th>
+                <th>Volume</th>
                 <th>RSI</th>
-                <th>Volume Spike</th>
                 <th>News Sentiment</th>
-                <th>Sector Sentiment</th>
                 <th>Earnings Impact</th>
+                <th>Reason</th>
               </tr>
             </thead>
             <tbody>
@@ -48,12 +51,11 @@ export default function Home() {
                   <td>{signal.timeframe}</td>
                   <td>{signal.entry}</td>
                   <td>{signal.exit}</td>
-                  <td>{signal.reason}</td>
+                  <td>{signal.volume}</td>
                   <td>{signal.rsi}</td>
-                  <td>{signal.volumeSpike}</td>
                   <td>{signal.newsSentiment}</td>
-                  <td>{signal.sectorSentiment}</td>
                   <td>{signal.earningsImpact}</td>
+                  <td>{signal.reason}</td>
                 </tr>
               ))}
             </tbody>

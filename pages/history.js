@@ -1,24 +1,35 @@
-// pages/api/signals.js
-import fetch from 'node-fetch';
-import { generateSignalFromData } from '../../lib/aiSignalEngine';
-import { preProcessData } from '../../lib/preProcessData';
-import { fetchNSEData } from '../../lib/fetchNSEData';
+// pages/history.js
+import React, { useEffect, useState } from "react";
 
-export default async function handler(req, res) {
-  try {
-    // Step 1: Fetch raw stock data
-    const stockData = await fetchNSEData(); // This will use fallback APIs internally
+export default function History() {
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    // Step 2: Pre-process the data (normalize, structure, etc.)
-    const processedData = preProcessData(stockData);
+  useEffect(() => {
+    async function fetchHistory() {
+      try {
+        const response = await fetch("/api/history");
+        const data = await response.json();
+        setHistory(data);
+      } catch (err) {
+        console.error("Error fetching history:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-    // Step 3: Generate AI signals
-    const signals = generateSignalFromData(processedData);
+    fetchHistory();
+  }, []);
 
-    // Step 4: Return as JSON
-    res.status(200).json(signals);
-  } catch (error) {
-    console.error("API Error in /api/signals:", error);
-    res.status(500).json({ error: 'Failed to generate signals' });
-  }
-}
+  return (
+    <div style={{ padding: "20px", fontFamily: "Arial" }}>
+      <h1 style={{ textAlign: "center" }}>📊 Past Intraday Signals</h1>
+      <p style={{ textAlign: "center" }}>View all previous day’s trade ideas for backtesting and analysis.</p>
+
+      {loading ? (
+        <p>Loading history...</p>
+      ) : history.length === 0 ? (
+        <p>No historical data available yet.</p>
+      ) : (
+        history.map((day, i) => (
+          <div key={i} style={{ marginBottom: "40px" }}>

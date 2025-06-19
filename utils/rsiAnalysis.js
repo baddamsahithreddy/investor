@@ -1,31 +1,22 @@
 // utils/rsiAnalysis.js
 
-/**
- * Calculates RSI (Relative Strength Index) for a given price series.
- * Default period is 14 candles (e.g., 5-minute or 15-minute).
- */
-export function calculateRSI(prices = [], period = 14) {
-  if (prices.length < period + 1) return null;
+export function getRSI(prices = []) {
+  if (prices.length < 14) return null;
 
-  let gains = 0;
-  let losses = 0;
-
-  for (let i = 1; i <= period; i++) {
+  let gains = 0, losses = 0;
+  for (let i = 1; i <= 14; i++) {
     const diff = prices[i] - prices[i - 1];
-    if (diff >= 0) {
-      gains += diff;
-    } else {
-      losses -= diff; // diff is negative
-    }
+    if (diff > 0) gains += diff;
+    else losses -= diff;
   }
 
-  const averageGain = gains / period;
-  const averageLoss = losses / period;
+  const avgGain = gains / 14;
+  const avgLoss = losses / 14;
 
-  if (averageLoss === 0) return 100; // Avoid division by zero
+  if (avgLoss === 0) return 100;
 
-  const rs = averageGain / averageLoss;
-  const rsi = 100 - 100 / (1 + rs);
-
-  return parseFloat(rsi.toFixed(2));
+  const rs = avgGain / avgLoss;
+  return +(100 - 100 / (1 + rs)).toFixed(2);
 }
+
+export default getRSI;

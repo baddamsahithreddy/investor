@@ -1,35 +1,73 @@
-// pages/history.js
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function History() {
+export default function HistoryPage() {
   const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchHistory() {
       try {
-        const response = await fetch("/api/history");
-        const data = await response.json();
+        const res = await fetch("/api/history");
+        const data = await res.json();
         setHistory(data);
       } catch (err) {
-        console.error("Error fetching history:", err);
-      } finally {
-        setLoading(false);
+        console.error("Failed to load history:", err);
       }
     }
-
     fetchHistory();
   }, []);
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial" }}>
-      <h1 style={{ textAlign: "center" }}>📊 Past Intraday Signals</h1>
-      <p style={{ textAlign: "center" }}>View all previous day’s trade ideas for backtesting and analysis.</p>
-
-      {loading ? (
-        <p>Loading history...</p>
-      ) : history.length === 0 ? (
-        <p>No historical data available yet.</p>
+      <h1 style={{ textAlign: "center" }}>Past Trade Recommendations</h1>
+      {history.length === 0 ? (
+        <p>Loading...</p>
       ) : (
-        history.map((day, i) => (
-          <div key={i} style={{ marginBottom: "40px" }}>
+        history.map((day, index) => (
+          <div key={index} style={{ marginBottom: "30px" }}>
+            <h2>{day.date}</h2>
+            <table
+              border="1"
+              cellPadding="10"
+              style={{ width: "100%", borderCollapse: "collapse" }}
+            >
+              <thead>
+                <tr>
+                  <th>Stock</th>
+                  <th>Direction</th>
+                  <th>Confidence</th>
+                  <th>Timeframe</th>
+                  <th>Entry</th>
+                  <th>Exit</th>
+                  <th>Volume</th>
+                  <th>RSI</th>
+                  <th>News</th>
+                  <th>Sector</th>
+                  <th>Earnings</th>
+                  <th>Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                {day.signals.map((signal, idx) => (
+                  <tr key={idx}>
+                    <td>{signal.stock}</td>
+                    <td>{signal.direction}</td>
+                    <td>{signal.confidence}%</td>
+                    <td>{signal.timeframe}</td>
+                    <td>{signal.entry}</td>
+                    <td>{signal.exit}</td>
+                    <td>{signal.volume}</td>
+                    <td>{signal.rsi}</td>
+                    <td>{signal.newsSentiment}</td>
+                    <td>{signal.sectorSentiment}</td>
+                    <td>{signal.earningsImpact}</td>
+                    <td>{signal.reason}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}

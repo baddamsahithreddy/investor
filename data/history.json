@@ -1,0 +1,40 @@
+[
+  {
+    "date": "2025-06-17",
+    "signals": [
+      {
+        "stock": "HINDALCO",
+        "direction": "Short",
+        "confidence": 78,
+        "timeframe": "15m",
+        "entry": 468.25,
+        "exit": 460,
+        "volume": "Moderate",
+        "rsi": 70,
+        "newsSentiment": "Negative",
+        "sectorSentiment": "Weak",
+        "earningsImpact": "Negative",
+        "reason": "Overbought RSI and poor results"
+      }
+    ]
+  },
+  {
+    "date": "2025-06-18",
+    "signals": [
+      {
+        "stock": "INFY",
+        "direction": "Long",
+        "confidence": 82,
+        "timeframe": "10m",
+        "entry": 1345.6,
+        "exit": 1370,
+        "volume": "High",
+        "rsi": 55,
+        "newsSentiment": "Positive",
+        "sectorSentiment": "Strong",
+        "earningsImpact": "Positive",
+        "reason": "Strong earnings, positive sentiment, and upward momentum"
+      }
+    ]
+  }
+]

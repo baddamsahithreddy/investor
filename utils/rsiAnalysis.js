@@ -1,22 +1,25 @@
-// utils/rsiAnalysis.js
+export function getRSI(symbol, prices) {
+  // Basic RSI calculation for the last 14 periods
+  if (!prices || prices.length < 15) {
+    return { value: 50 }; // neutral fallback
+  }
 
-export function getRSI(prices = []) {
-  if (prices.length < 14) return null;
+  let gains = 0;
+  let losses = 0;
 
-  let gains = 0, losses = 0;
   for (let i = 1; i <= 14; i++) {
-    const diff = prices[i] - prices[i - 1];
-    if (diff > 0) gains += diff;
+    const diff = prices[prices.length - i] - prices[prices.length - i - 1];
+    if (diff >= 0) gains += diff;
     else losses -= diff;
   }
 
   const avgGain = gains / 14;
   const avgLoss = losses / 14;
 
-  if (avgLoss === 0) return 100;
+  if (avgLoss === 0) return { value: 100 };
 
   const rs = avgGain / avgLoss;
-  return +(100 - 100 / (1 + rs)).toFixed(2);
-}
+  const rsi = 100 - 100 / (1 + rs);
 
-export default getRSI;
+  return { value: parseFloat(rsi.toFixed(2)) };
+}

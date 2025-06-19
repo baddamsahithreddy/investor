@@ -1,49 +1,43 @@
 // utils/fetchNews.js
 
 import axios from 'axios';
+import Sentiment from 'sentiment';
 
-const NEWS_SOURCES = [
-  'moneycontrol.com',
-  'economictimes.indiatimes.com',
-  'reuters.com',
-  'livemint.com',
-  'ndtvprofit.com'
-];
+const sentiment = new Sentiment();
+const NEWS_API_KEY = process.env.NEWS_API_KEY;
 
-const API_KEY = process.env.NEWS_API_KEY; // e.g., NewsData.io or any other news API
-
-export async function fetchNewsForStock(stockSymbol) {
+/**
+ * Fetch news headlines and perform sentiment analysis.
+ * @param {string} stockName - Company name like "TATA Steel"
+ * @returns {Promise<{ sentiment: string, headline: string }>}
+ */
+export async function fetchNewsSentiment(stockName) {
   try {
-    const query = `${stockSymbol} stock`;
-    const url = `https://newsdata.io/api/1/news?apikey=${API_KEY}&q=${encodeURIComponent(query)}&country=in&language=en&category=business`;
+    const url = `https://newsdata.io/api/1/news?apikey=${NEWS_API_KEY}&q=${encodeURIComponent(stockName)}&country=in&language=en&category=business`;
+    const res = await axios.get(url);
+    const articles = res.data?.results;
 
-    const response = await axios.get(url);
-    const articles = response.data.results || [];
-
-    // Sentiment summary logic (simple keyword based)
-    let sentimentScore = 0;
-    for (const article of articles) {
-      const title = article.title.toLowerCase();
-      if (title.includes('gain') || title.includes('rally') || title.includes('rise') || title.includes('up')) {
-        sentimentScore++;
-      } else if (title.includes('fall') || title.includes('drop') || title.includes('down') || title.includes('loss')) {
-        sentimentScore--;
-      }
+    if (!articles || articles.length === 0) {
+      return { sentiment: 'Neutral', headline: 'No recent news found' };
     }
 
-    let sentiment = 'Neutral';
-    if (sentimentScore > 1) sentiment = 'Positive';
-    else if (sentimentScore < -1) sentiment = 'Negative';
+    const headlines = articles.slice(0, 3).map(a => a.title).join('. ');
+    const score = sentiment.analyze(headlines).score;
+
+    let sentimentLabel = 'Neutral';
+    if (score > 2) sentimentLabel = 'Positive';
+    else if (score < -2) sentimentLabel = 'Negative';
 
     return {
-      sentiment,
-      articles: articles.slice(0, 5).map((a) => ({ title: a.title, link: a.link }))
+      sentiment: sentimentLabel,
+      headline: articles[0].title
     };
-  } catch (error) {
-    console.error('Error fetching news:', error);
+
+  } catch (err) {
+    console.error(`News fetch failed for ${stockName}:`, err.message);
     return {
-      sentiment: 'Neutral',
-      articles: []
+      sentiment: 'Unknown',
+      headline: 'Unable to fetch news'
     };
   }
 }

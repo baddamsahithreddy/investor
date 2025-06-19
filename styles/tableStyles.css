@@ -1,0 +1,17 @@
+/* styles/tableStyles.css */
+td[data-direction="Long"] {
+  background-color: #e0ffe0;
+}
+
+td[data-direction="Short"] {
+  background-color: #ffe0e0;
+}
+
+td[data-confidence-high="true"] {
+  font-weight: bold;
+  color: #1a7f37;
+}
+
+tr:hover {
+  background-color: #f5f5f5;
+}

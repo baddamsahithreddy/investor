@@ -30,3 +30,4 @@ export function getVolumeSpike(volumeData = []) {
     averageVolume: Math.round(averageVolume)
   };
 }
+

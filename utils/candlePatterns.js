@@ -1,38 +1,43 @@
 // utils/candlePatterns.js
 
-// Identifies candlestick patterns based on OHLC data
+/**
+ * Detects candlestick patterns from OHLC data
+ */
 export function detectCandlePattern(ohlc) {
-  const { open, high, low, close } = ohlc;
-  const bodySize = Math.abs(close - open);
-  const range = high - low;
-  const upperShadow = high - Math.max(open, close);
-  const lowerShadow = Math.min(open, close) - low;
+  const patterns = [];
 
-  const bodyToRangeRatio = bodySize / range;
+  ohlc.forEach((bar, index) => {
+    const { open, high, low, close } = bar;
+    const body = Math.abs(close - open);
+    const range = high - low;
+    const upperShadow = high - Math.max(open, close);
+    const lowerShadow = Math.min(open, close) - low;
 
-  if (bodySize < range * 0.1) {
-    return "Doji"; // Very small body
-  }
+    // Doji: Small body, large shadow
+    if (body / range < 0.1) {
+      patterns.push({ index, pattern: 'Doji' });
+    }
 
-  // Hammer pattern: small body near top, long lower shadow
-  if (bodyToRangeRatio < 0.3 && lowerShadow > 2 * bodySize && upperShadow < bodySize) {
-    return "Hammer";
-  }
+    // Hammer: Small body, long lower shadow
+    if (body / range < 0.3 && lowerShadow > 2 * body) {
+      patterns.push({ index, pattern: 'Hammer' });
+    }
 
-  // Inverted Hammer: small body near bottom, long upper shadow
-  if (bodyToRangeRatio < 0.3 && upperShadow > 2 * bodySize && lowerShadow < bodySize) {
-    return "Inverted Hammer";
-  }
+    // Shooting Star: Small body, long upper shadow
+    if (body / range < 0.3 && upperShadow > 2 * body) {
+      patterns.push({ index, pattern: 'Shooting Star' });
+    }
 
-  // Bullish Engulfing
-  if (open < close && bodySize > range * 0.6) {
-    return "Bullish Engulfing";
-  }
+    // Engulfing (Bullish/Bearish)
+    if (index > 0) {
+      const prev = ohlc[index - 1];
+      if (open < close && prev.open > prev.close && open < prev.close && close > prev.open) {
+        patterns.push({ index, pattern: 'Bullish Engulfing' });
+      } else if (open > close && prev.open < prev.close && open > prev.close && close < prev.open) {
+        patterns.push({ index, pattern: 'Bearish Engulfing' });
+      }
+    }
+  });
 
-  // Bearish Engulfing
-  if (open > close && bodySize > range * 0.6) {
-    return "Bearish Engulfing";
-  }
-
-  return "Neutral";
+  return patterns;
 }

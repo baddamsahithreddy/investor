@@ -1,35 +1,44 @@
 // utils/sectorSentiment.js
 
-import axios from 'axios';
-import sectorMap from '../data/sectorMap.json';
-
 /**
- * Analyze sector sentiment using sector performance and news
+ * Aggregates sector-level sentiment using stock-level performance
+ * Returns a map like: { "IT": "Positive", "BANK": "Neutral", ... }
  */
-export async function getSectorSentiment(stockSymbol) {
-  try {
-    const sector = sectorMap[stockSymbol.toUpperCase()];
-    if (!sector) throw new Error("Sector mapping not found");
 
-    // Dummy endpoint for sector performance (Replace with a real one or scrape)
-    const url = `https://api.moneycontrol.com/sector/performance?sector=${encodeURIComponent(sector)}`;
-    const response = await axios.get(url);
+export function analyzeSectorSentiment(processedStocks) {
+  const sectorMap = {};
 
-    const performance = response.data?.performanceScore || 0;
+  processedStocks.forEach(stock => {
+    const { sector, priceHistory } = stock;
 
-    let sentiment = 'Neutral';
-    if (performance > 1) sentiment = 'Positive';
-    else if (performance < -1) sentiment = 'Negative';
+    if (!sector || !priceHistory || priceHistory.length < 2) return;
 
-    return {
-      sector,
-      sentiment,
-    };
-  } catch (error) {
-    console.error(`Sector sentiment fetch failed for ${stockSymbol}:`, error.message);
-    return {
-      sector: null,
-      sentiment: 'Unknown',
-    };
+    const latestPrice = priceHistory[priceHistory.length - 1];
+    const prevPrice = priceHistory[0];
+
+    const gain = ((latestPrice - prevPrice) / prevPrice) * 100;
+
+    if (!sectorMap[sector]) {
+      sectorMap[sector] = { gainSum: 0, count: 0 };
+    }
+
+    sectorMap[sector].gainSum += gain;
+    sectorMap[sector].count += 1;
+  });
+
+  const sentimentMap = {};
+
+  for (const [sector, data] of Object.entries(sectorMap)) {
+    const avgGain = data.gainSum / data.count;
+
+    if (avgGain > 1.5) {
+      sentimentMap[sector] = 'Positive';
+    } else if (avgGain < -1) {
+      sentimentMap[sector] = 'Negative';
+    } else {
+      sentimentMap[sector] = 'Neutral';
+    }
   }
+
+  return sentimentMap;
 }

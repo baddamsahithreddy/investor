@@ -1,39 +1,37 @@
-.table-high-confidence {
-  background-color: #d4edda; /* Light green for confidence > 80 */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
 }
 
-.table-medium-confidence {
-  background-color: #fff3cd; /* Light yellow for confidence 60-80 */
+thead tr {
+  background-color: #0070f3;
+  color: white;
 }
 
-.table-low-confidence {
-  background-color: #f8d7da; /* Light red for confidence < 60 */
+th, td {
+  padding: 12px;
+  text-align: center;
+  border: 1px solid #ccc;
 }
 
-.direction-long {
-  color: #28a745; /* Green */
+tbody tr:hover {
+  background-color: #e8f0ff;
+}
+
+td:nth-child(3) {
   font-weight: bold;
 }
 
-.direction-short {
-  color: #dc3545; /* Red */
+td:nth-child(2) {
   font-weight: bold;
+  color: #1d7c1d;
 }
 
-.rsi-overbought {
-  background-color: #ffe5b4; /* Orange-ish */
+td[data-direction='Short'] {
+  color: red;
 }
 
-.rsi-oversold {
-  background-color: #b4d9ff; /* Light blue */
-}
-
-@media screen and (max-width: 768px) {
-  table {
-    font-size: 12px;
-  }
-
-  th, td {
-    padding: 6px;
-  }
+td[data-direction='Long'] {
+  color: green;
 }

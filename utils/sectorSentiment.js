@@ -1,63 +1,64 @@
 // utils/sectorSentiment.js
 
-import { fetchLatestNews } from './fetchNews';
-import { getVolumeData } from './getVolumeData';
-import { getPriceAction } from './priceAction';
+import axios from 'axios';
+import sectorMap from '../data/sectorMap.json';
 
 /**
- * Evaluates sentiment and momentum for a given sector
- * Combines volume, news sentiment, and price movement
+ * Analyzes sentiment per sector based on news headlines and price momentum
  */
-export async function getSectorSentiment(sector, stockList) {
+export async function getSectorSentiment(stockSymbol) {
   try {
-    // 1. Pull news sentiment for sector
-    const news = await fetchLatestNews(sector);
-    const sentiments = news.map(n => n.sentiment);
-    const sentimentScore = calculateSentimentScore(sentiments);
+    const sector = sectorMap[stockSymbol] || 'Unknown';
+    if (sector === 'Unknown') return { sector, sentiment: 'Neutral' };
 
-    // 2. Analyze price + volume across all stocks in this sector
-    let bullish = 0, bearish = 0;
-    for (const stock of stockList) {
-      const volumeData = await getVolumeData(stock);
-      const priceAction = await getPriceAction(stock);
+    // 1. Fetch sector-wise recent stock performance (simplified mock logic)
+    const sectorPerformance = await fetchSectorPerformance(sector);
 
-      const isStrong = volumeData?.spike === true && priceAction?.action === 'Breakout';
-      const isWeak = volumeData?.drop === true && priceAction?.action === 'Breakdown';
+    // 2. Fetch recent sector-related news sentiment
+    const newsSentiment = await fetchSectorNewsSentiment(sector);
 
-      if (isStrong) bullish++;
-      else if (isWeak) bearish++;
+    // 3. Combine logic to determine overall sector sentiment
+    let sentiment = 'Neutral';
+    if (sectorPerformance === 'Bullish' && newsSentiment === 'Positive') {
+      sentiment = 'Strong Positive';
+    } else if (sectorPerformance === 'Bearish' && newsSentiment === 'Negative') {
+      sentiment = 'Strong Negative';
+    } else if (newsSentiment === 'Positive') {
+      sentiment = 'Positive';
+    } else if (newsSentiment === 'Negative') {
+      sentiment = 'Negative';
     }
 
-    const total = stockList.length;
-    const momentumScore = (bullish - bearish) / total;
-
-    // 3. Final decision based on both
-    const overallScore = sentimentScore + momentumScore;
-
-    let tag = 'Neutral';
-    if (overallScore > 0.5) tag = 'Bullish';
-    else if (overallScore < -0.5) tag = 'Bearish';
-
-    return {
-      sector,
-      sentimentScore,
-      momentumScore,
-      tag,
-    };
+    return { sector, sentiment };
   } catch (error) {
-    console.error(`Error in sector sentiment for ${sector}:`, error.message);
-    return {
-      sector,
-      sentimentScore: 0,
-      momentumScore: 0,
-      tag: 'Unknown',
-    };
+    console.error(`Sector sentiment error for ${stockSymbol}:`, error);
+    return { sector: 'Unknown', sentiment: 'Neutral' };
   }
 }
 
-function calculateSentimentScore(sentiments) {
-  const scoreMap = { Positive: 1, Neutral: 0, Negative: -1 };
-  if (sentiments.length === 0) return 0;
-  const total = sentiments.reduce((sum, s) => sum + (scoreMap[s] || 0), 0);
-  return total / sentiments.length;
+// Example: Dummy price momentum logic (replace with real sector indices API or data if available)
+async function fetchSectorPerformance(sector) {
+  const bullishSectors = ['IT', 'Banking', 'Auto'];
+  const bearishSectors = ['Metals', 'Energy'];
+
+  if (bullishSectors.includes(sector)) return 'Bullish';
+  if (bearishSectors.includes(sector)) return 'Bearish';
+  return 'Neutral';
+}
+
+// Example: Use free news API or headlines database
+async function fetchSectorNewsSentiment(sector) {
+  try {
+    // Mocking news sentiment per sector for now
+    const sentimentMap = {
+      IT: 'Positive',
+      Banking: 'Positive',
+      Pharma: 'Negative',
+      Metals: 'Neutral',
+      Energy: 'Negative'
+    };
+    return sentimentMap[sector] || 'Neutral';
+  } catch (err) {
+    return 'Neutral';
+  }
 }

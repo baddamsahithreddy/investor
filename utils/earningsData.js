@@ -3,43 +3,28 @@
 import axios from 'axios';
 
 /**
- * Fetch and interpret recent earnings result of a stock
- * @param {string} symbol - NSE stock symbol
- * @returns {Promise<{ impact: string, epsGrowth: string }>}
+ * Get recent earnings data and return impact analysis.
+ * Returns: { symbol, earningsImpact: 'Positive' | 'Negative' | 'Neutral' }
  */
 export async function getEarningsImpact(symbol) {
   try {
-    // Example API - Replace with actual if you have one
-    const url = `https://www.screener.in/api/company/${symbol}/consolidated/`;
-    const response = await axios.get(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0' }
-    });
+    // Using Screener.in unofficial API as fallback
+    const url = `https://www.screener.in/company/${symbol}/consolidated/`;
 
-    const data = response.data;
-    const quarters = data?.data?.quarters;
-    if (!quarters || quarters.length < 2) throw new Error("Not enough data");
+    const response = await axios.get(url);
+    const html = response.data;
 
-    const latest = quarters[quarters.length - 1];
-    const prev = quarters[quarters.length - 2];
+    // Simple logic: check if "Profit up" or "Profit down" is found
+    const isPositive = html.includes('Profit has increased') || html.includes('Net Profit has increased');
+    const isNegative = html.includes('Profit has decreased') || html.includes('Net Profit has decreased');
 
-    const epsLatest = parseFloat(latest.eps || 0);
-    const epsPrev = parseFloat(prev.eps || 0);
-    const growth = epsLatest - epsPrev;
+    let earningsImpact = 'Neutral';
+    if (isPositive) earningsImpact = 'Positive';
+    else if (isNegative) earningsImpact = 'Negative';
 
-    let impact = 'Neutral';
-    if (growth > 5) impact = 'Positive';
-    else if (growth < -5) impact = 'Negative';
-
-    return {
-      impact,
-      epsGrowth: `${growth.toFixed(2)} EPS change`
-    };
-
+    return { symbol, earningsImpact };
   } catch (error) {
     console.error(`Failed to fetch earnings for ${symbol}:`, error.message);
-    return {
-      impact: 'Unknown',
-      epsGrowth: 'N/A'
-    };
+    return { symbol, earningsImpact: 'Neutral' };
   }
 }

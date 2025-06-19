@@ -1,28 +1,32 @@
 // utils/getVolumeData.js
-// Compares today's volume with the average volume of the past 5 trading days
 
-export function analyzeVolumeSpikes(stockOHLCMap) {
-  const volumeSignals = {};
-
-  Object.entries(stockOHLCMap).forEach(([stock, ohlcData]) => {
-    const todayData = ohlcData[ohlcData.length - 1];
-    const pastVolumes = ohlcData.slice(0, -1).map(day => day.volume);
-
-    const avgVolume = pastVolumes.reduce((a, b) => a + b, 0) / pastVolumes.length;
-
-    if (avgVolume === 0) {
-      volumeSignals[stock] = { spike: false, spikeRatio: 0 };
-      return;
-    }
-
-    const spikeRatio = todayData.volume / avgVolume;
-    volumeSignals[stock] = {
-      spike: spikeRatio > 1.5,
-      spikeRatio: parseFloat(spikeRatio.toFixed(2)),
-      currentVolume: todayData.volume,
-      averageVolume: parseInt(avgVolume)
+/**
+ * Analyze volume spikes for intraday trading.
+ * Compares today's volume vs past 5-candle average.
+ */
+export function getVolumeSpike(volumeData = []) {
+  if (!volumeData || volumeData.length < 6) {
+    return {
+      category: "Unknown",
+      spikeRatio: 0,
+      currentVolume: 0,
+      averageVolume: 0
     };
-  });
+  }
 
-  return volumeSignals;
+  const currentVolume = volumeData[volumeData.length - 1];
+  const pastVolumes = volumeData.slice(0, -1);
+  const averageVolume = pastVolumes.reduce((a, b) => a + b, 0) / pastVolumes.length;
+  const spikeRatio = currentVolume / averageVolume;
+
+  let category = "Low";
+  if (spikeRatio > 1.5) category = "High";
+  else if (spikeRatio > 1.2) category = "Moderate";
+
+  return {
+    category,                    // High, Moderate, Low
+    spikeRatio: +spikeRatio.toFixed(2),
+    currentVolume,
+    averageVolume: Math.round(averageVolume)
+  };
 }

@@ -1,46 +1,24 @@
 // pages/api/signals.js
-export default function handler(req, res) {
-  const signals = [
-    {
-      stock: "TATASTEEL",
-      direction: "Long",
-      confidence: 87,
-      timeframe: "5m",
-      entry: 150.45,
-      exit: 153.10,
-      volume: "High",
-      rsi: 62,
-      newsSentiment: "Positive",
-      earningsImpact: "Neutral",
-      reason: "High volume with bullish RSI and positive news sentiment"
-    },
-    {
-      stock: "HINDALCO",
-      direction: "Short",
-      confidence: 78,
-      timeframe: "15m",
-      entry: 468.25,
-      exit: 460.00,
-      volume: "Moderate",
-      rsi: 70,
-      newsSentiment: "Negative",
-      earningsImpact: "Negative",
-      reason: "Overbought RSI and recent poor earnings report"
-    },
-    {
-      stock: "INFY",
-      direction: "Long",
-      confidence: 81,
-      timeframe: "10m",
-      entry: 1345.60,
-      exit: 1370.00,
-      volume: "High",
-      rsi: 55,
-      newsSentiment: "Positive",
-      earningsImpact: "Positive",
-      reason: "Strong earnings, positive sentiment, and upward momentum"
-    }
-  ];
 
-  res.status(200).json(signals);
+import { generateSignalFromData } from '../../lib/aiSignalEngine';
+import { preProcessData } from '../../lib/preProcessData';
+import { fetchNSEData } from '../../lib/fetchNSEData'; // This fetches live stock data
+
+export default async function handler(req, res) {
+  try {
+    // Step 1: Fetch raw stock data (live from NSE/BSE or fallback API)
+    const rawStockData = await fetchNSEData();
+
+    // Step 2: Preprocess (clean + structure)
+    const processedData = preProcessData(rawStockData);
+
+    // Step 3: Generate signals using AI engine
+    const signals = generateSignalFromData(processedData);
+
+    // Step 4: Return as API response
+    res.status(200).json(signals);
+  } catch (error) {
+    console.error('Error generating signals:', error);
+    res.status(500).json({ error: 'Failed to generate trading signals' });
+  }
 }

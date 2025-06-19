@@ -3,6 +3,7 @@
 export function getRSI(prices = []) {
   if (prices.length < 14) return null;
 
+
   let gains = 0, losses = 0;
   for (let i = 1; i <= 14; i++) {
     const diff = prices[i] - prices[i - 1];

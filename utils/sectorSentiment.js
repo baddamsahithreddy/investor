@@ -1,44 +1,63 @@
 // utils/sectorSentiment.js
 
+import { fetchLatestNews } from './fetchNews';
+import { getVolumeData } from './getVolumeData';
+import { getPriceAction } from './priceAction';
+
 /**
- * Aggregates sector-level sentiment using stock-level performance
- * Returns a map like: { "IT": "Positive", "BANK": "Neutral", ... }
+ * Evaluates sentiment and momentum for a given sector
+ * Combines volume, news sentiment, and price movement
  */
+export async function getSectorSentiment(sector, stockList) {
+  try {
+    // 1. Pull news sentiment for sector
+    const news = await fetchLatestNews(sector);
+    const sentiments = news.map(n => n.sentiment);
+    const sentimentScore = calculateSentimentScore(sentiments);
 
-export function analyzeSectorSentiment(processedStocks) {
-  const sectorMap = {};
+    // 2. Analyze price + volume across all stocks in this sector
+    let bullish = 0, bearish = 0;
+    for (const stock of stockList) {
+      const volumeData = await getVolumeData(stock);
+      const priceAction = await getPriceAction(stock);
 
-  processedStocks.forEach(stock => {
-    const { sector, priceHistory } = stock;
+      const isStrong = volumeData?.spike === true && priceAction?.action === 'Breakout';
+      const isWeak = volumeData?.drop === true && priceAction?.action === 'Breakdown';
 
-    if (!sector || !priceHistory || priceHistory.length < 2) return;
-
-    const latestPrice = priceHistory[priceHistory.length - 1];
-    const prevPrice = priceHistory[0];
-
-    const gain = ((latestPrice - prevPrice) / prevPrice) * 100;
-
-    if (!sectorMap[sector]) {
-      sectorMap[sector] = { gainSum: 0, count: 0 };
+      if (isStrong) bullish++;
+      else if (isWeak) bearish++;
     }
 
-    sectorMap[sector].gainSum += gain;
-    sectorMap[sector].count += 1;
-  });
+    const total = stockList.length;
+    const momentumScore = (bullish - bearish) / total;
 
-  const sentimentMap = {};
+    // 3. Final decision based on both
+    const overallScore = sentimentScore + momentumScore;
 
-  for (const [sector, data] of Object.entries(sectorMap)) {
-    const avgGain = data.gainSum / data.count;
+    let tag = 'Neutral';
+    if (overallScore > 0.5) tag = 'Bullish';
+    else if (overallScore < -0.5) tag = 'Bearish';
 
-    if (avgGain > 1.5) {
-      sentimentMap[sector] = 'Positive';
-    } else if (avgGain < -1) {
-      sentimentMap[sector] = 'Negative';
-    } else {
-      sentimentMap[sector] = 'Neutral';
-    }
+    return {
+      sector,
+      sentimentScore,
+      momentumScore,
+      tag,
+    };
+  } catch (error) {
+    console.error(`Error in sector sentiment for ${sector}:`, error.message);
+    return {
+      sector,
+      sentimentScore: 0,
+      momentumScore: 0,
+      tag: 'Unknown',
+    };
   }
+}
 
-  return sentimentMap;
+function calculateSentimentScore(sentiments) {
+  const scoreMap = { Positive: 1, Neutral: 0, Negative: -1 };
+  if (sentiments.length === 0) return 0;
+  const total = sentiments.reduce((sum, s) => sum + (scoreMap[s] || 0), 0);
+  return total / sentiments.length;
 }

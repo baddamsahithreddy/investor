@@ -3,38 +3,41 @@
 import axios from 'axios';
 
 /**
- * Fetch recent insider or bulk/block deals for the given stock
+ * Fetches recent insider, block, or bulk deal trades from NSE or available sources
+ * Returns list of interesting stocks with deal type, quantity and price info
  */
-export async function getInsiderActivity(stockSymbol) {
+export async function getInsiderDeals() {
   try {
-    // Example: Screener-like public endpoint (replace with your own source or scrape)
-    const url = `https://api.example.com/deals?symbol=${stockSymbol}`;
-    const response = await axios.get(url);
+    const url = `https://www.nseindia.com/api/corporate-announcements?index=equities`; // Mock URL for demonstration
 
+    const headers = {
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Referer': 'https://www.nseindia.com/',
+    };
+
+    const response = await axios.get(url, { headers });
     const data = response.data || [];
 
-    // Filter recent bulk or insider trades (last 7 days)
-    const now = new Date();
-    const recentDeals = data.filter(deal => {
-      const dealDate = new Date(deal.date);
-      const daysDiff = (now - dealDate) / (1000 * 60 * 60 * 24);
-      return daysDiff <= 7;
+    // Example filter: only insider or block deals
+    const filtered = data.filter((item) => {
+      return (
+        item.announcementTitle?.toLowerCase().includes("insider") ||
+        item.announcementTitle?.toLowerCase().includes("bulk deal") ||
+        item.announcementTitle?.toLowerCase().includes("block deal")
+      );
     });
 
-    const hasBulkBuy = recentDeals.some(deal => deal.type === 'BUY' && deal.category === 'Bulk');
-    const hasInsiderSell = recentDeals.some(deal => deal.type === 'SELL' && deal.category === 'Insider');
-
-    return {
-      bulkBuy: hasBulkBuy,
-      insiderSell: hasInsiderSell,
-      count: recentDeals.length,
-    };
+    return filtered.map((deal) => ({
+      stock: deal.symbol || deal.companyName,
+      type: deal.announcementTitle,
+      date: deal.announcementDate,
+      quantity: deal.quantity || 'N/A',
+      price: deal.price || 'N/A',
+    }));
   } catch (error) {
-    console.error(`Insider deals fetch failed for ${stockSymbol}:`, error.message);
-    return {
-      bulkBuy: false,
-      insiderSell: false,
-      count: 0,
-    };
+    console.error('Insider deal fetch failed:', error);
+    return [];
   }
 }

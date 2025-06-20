@@ -49,41 +49,27 @@ export default function Home() {
               <th>Earnings Impact</th>
               <th>Reason</th>
             </tr>
-          </thead>
           <tbody>
-            {signals.map((signal, index) => (
-              <tr key={index}>
-                <td>{signal.stock}</td>
-                <td>{signal.direction}</td>
-                <td>{signal.confidence}%</td>
-                <td>{signal.timeframe}</td>
-                <td>{signal.entry}</td>
-                <td>{signal.exit}</td>
-                <td>{signal.volume}</td>
-                <td>{signal.rsi}</td>
-                
-                <td>
-                  {typeof signal.newsSentiment === "string"
-                    ? signal.newsSentiment
-                    : signal.newsSentiment?.summary || "N/A"}
-                </td>
+  {signals.map((signal, i) => (
+    <tr key={i}>
+      <td>{signal.stock}</td>
+      <td>{signal.direction}</td>
+      <td>{signal.confidence}%</td>
+      <td>{signal.timeframe}</td>
+      <td>{signal.entry}</td>
+      <td>{signal.exit}</td>
+      <td>{signal.volume}</td>
+      <td>{signal.rsi}</td>
 
-                <td>
-                  {typeof signal.sectorSentiment === "object" && signal.sectorSentiment !== null
-                    ? `${signal.sectorSentiment.sector || "?"} - ${signal.sectorSentiment.sentiment || "?"}`
-                    : signal.sectorSentiment || "N/A"}
-                </td>
+      {/* Safely stringify if still object */}
+      <td>{JSON.stringify(signal.newsSentiment || "-")}</td>
+      <td>{JSON.stringify(signal.sectorSentiment || "-")}</td>
+      <td>{JSON.stringify(signal.earningsImpact || "-")}</td>
 
-                <td>
-                  {typeof signal.earningsImpact === "object" && signal.earningsImpact !== null
-                    ? `${signal.earningsImpact.type || "?"} (${signal.earningsImpact.effect || "?"})`
-                    : signal.earningsImpact || "N/A"}
-                </td>
-
-                <td>{signal.reason}</td>
-              </tr>
-            ))}
-          </tbody>
+      <td>{signal.reason}</td>
+    </tr>
+  ))}
+</tbody>
         </table>
       )}
 

@@ -49,27 +49,37 @@ export default function Home() {
               <th>Earnings Impact</th>
               <th>Reason</th>
             </tr>
+          </thead>
           <tbody>
-  {signals.map((signal, i) => (
-    <tr key={i}>
-      <td>{signal.stock}</td>
-      <td>{signal.direction}</td>
-      <td>{signal.confidence}%</td>
-      <td>{signal.timeframe}</td>
-      <td>{signal.entry}</td>
-      <td>{signal.exit}</td>
-      <td>{signal.volume}</td>
-      <td>{signal.rsi}</td>
-
-      {/* Safely stringify if still object */}
-      <td>{JSON.stringify(signal.newsSentiment || "-")}</td>
-      <td>{JSON.stringify(signal.sectorSentiment || "-")}</td>
-      <td>{JSON.stringify(signal.earningsImpact || "-")}</td>
-
-      <td>{signal.reason}</td>
-    </tr>
-  ))}
-</tbody>
+            {signals.map((signal, i) => (
+              <tr key={i}>
+                <td>{signal.stock}</td>
+                <td>{signal.direction}</td>
+                <td>{signal.confidence}%</td>
+                <td>{signal.timeframe}</td>
+                <td>{signal.entry}</td>
+                <td>{signal.exit}</td>
+                <td>{signal.volume}</td>
+                <td>{signal.rsi}</td>
+                <td>
+                  {typeof signal.newsSentiment === "object"
+                    ? JSON.stringify(signal.newsSentiment)
+                    : signal.newsSentiment || "-"}
+                </td>
+                <td>
+                  {typeof signal.sectorSentiment === "object"
+                    ? `${signal.sectorSentiment.sector || ""} - ${signal.sectorSentiment.sentiment || ""}`
+                    : signal.sectorSentiment || "-"}
+                </td>
+                <td>
+                  {typeof signal.earningsImpact === "object"
+                    ? `${signal.earningsImpact.type || ""} (${signal.earningsImpact.effect || ""})`
+                    : signal.earningsImpact || "-"}
+                </td>
+                <td>{signal.reason || "-"}</td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       )}
 

@@ -1,24 +1,24 @@
-// pages/api/signals.js
-
 import { fetchNSEData } from '../../lib/fetchNSEData';
 import { preProcessData } from '../../lib/preProcessData';
 import { generateSignalFromData } from '../../lib/aiSignalEngine';
 
 export default async function handler(req, res) {
   try {
-    // Step 1: Fetch raw stock data (NIFTY50, safe midcaps)
-    const rawData = await fetchNSEData();
+    const stockData = await fetchNSEData();
 
-    // Step 2: Preprocess (standardize, clean)
-    const cleanedData = preProcessData(rawData);
+    console.log("📦 Raw stock data fetched:", stockData.length);  // ADD THIS
 
-    // Step 3: Generate AI trade signals
-    const signals = await generateSignalFromData(cleanedData);
+    const processedData = preProcessData(stockData);
 
-    // Step 4: Respond
+    console.log("🧪 Processed data for signal engine:", processedData.length);  // ADD THIS
+
+    const signals = await generateSignalFromData(processedData);
+
+    console.log("📊 Final generated signals:", signals.length);  // ADD THIS
+
     res.status(200).json(signals);
-  } catch (err) {
-    console.error("API Error at /api/signals:", err);
-    res.status(500).json({ error: "Failed to generate intraday signals." });
+  } catch (error) {
+    console.error("❌ Signal API Error:", error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 }

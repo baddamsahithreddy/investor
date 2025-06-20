@@ -50,32 +50,36 @@ export default function Home() {
               <th>Reason</th>
             </tr>
           </thead>
-         <tbody>
-  {signals.map((signal, index) => (
-    <tr key={index}>
-      <td>{signal.stock}</td>
-      <td>{signal.direction}</td>
-      <td>{signal.confidence}%</td>
-      <td>{signal.timeframe}</td>
-      <td>{signal.entry}</td>
-      <td>{signal.exit}</td>
-      <td>{signal.volume}</td>
-      <td>{signal.rsi}</td>
-      <td>{typeof signal.newsSentiment === "string" ? signal.newsSentiment : JSON.stringify(signal.newsSentiment)}</td>
-      <td>
-        {typeof signal.sectorSentiment === "object"
-          ? `${signal.sectorSentiment.sector} - ${signal.sectorSentiment.sentiment}`
-          : signal.sectorSentiment}
-      </td>
-      <td>
-        {typeof signal.earningsImpact === "object"
-          ? `${signal.earningsImpact.type} (${signal.earningsImpact.effect})`
-          : signal.earningsImpact}
-      </td>
-      <td>{signal.reason}</td>
-    </tr>
-  ))}
-</tbody>
+          <tbody>
+            {signals.map((signal, index) => (
+              <tr key={index}>
+                <td>{signal.stock || "-"}</td>
+                <td>{signal.direction || "-"}</td>
+                <td>{signal.confidence != null ? `${signal.confidence}%` : "-"}</td>
+                <td>{signal.timeframe || "-"}</td>
+                <td>{signal.entry ?? "-"}</td>
+                <td>{signal.exit ?? "-"}</td>
+                <td>{signal.volume || "-"}</td>
+                <td>{signal.rsi ?? "-"}</td>
+                <td>
+                  {typeof signal.newsSentiment === "string"
+                    ? signal.newsSentiment
+                    : JSON.stringify(signal.newsSentiment || {})}
+                </td>
+                <td>
+                  {typeof signal.sectorSentiment === "object" && signal.sectorSentiment !== null
+                    ? `${signal.sectorSentiment?.sector || "-"} - ${signal.sectorSentiment?.sentiment || "-"}`
+                    : signal.sectorSentiment || "-"}
+                </td>
+                <td>
+                  {typeof signal.earningsImpact === "object" && signal.earningsImpact !== null
+                    ? `${signal.earningsImpact?.type || "-"} (${signal.earningsImpact?.effect || "-"})`
+                    : signal.earningsImpact || "-"}
+                </td>
+                <td>{signal.reason || "-"}</td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       )}
 

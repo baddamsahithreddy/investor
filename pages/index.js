@@ -59,24 +59,28 @@ export default function Home() {
                 <td>{signal.timeframe}</td>
                 <td>{signal.entry}</td>
                 <td>{signal.exit}</td>
-                <td>{signal.volume}</td>
+                <td>{signal.volume || "-"}</td>
                 <td>{signal.rsi}</td>
+
                 <td>
                   {typeof signal.newsSentiment === "object"
-                    ? JSON.stringify(signal.newsSentiment)
+                    ? signal.newsSentiment.status || "-"
                     : signal.newsSentiment || "-"}
                 </td>
+
                 <td>
                   {typeof signal.sectorSentiment === "object"
-                    ? `${signal.sectorSentiment.sector || ""} - ${signal.sectorSentiment.sentiment || ""}`
+                    ? `${signal.sectorSentiment.sector || "Unknown"} - ${signal.sectorSentiment.sentiment || "Neutral"}`
                     : signal.sectorSentiment || "-"}
                 </td>
+
                 <td>
                   {typeof signal.earningsImpact === "object"
-                    ? `${signal.earningsImpact.type || ""} (${signal.earningsImpact.effect || ""})`
+                    ? `${signal.earningsImpact.type || "Unknown"} (${signal.earningsImpact.effect || "Neutral"})`
                     : signal.earningsImpact || "-"}
                 </td>
-                <td>{signal.reason || "-"}</td>
+
+                <td>{signal.reason}</td>
               </tr>
             ))}
           </tbody>
